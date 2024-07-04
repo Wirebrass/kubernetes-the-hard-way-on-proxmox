@@ -7,7 +7,7 @@ In this lab you will deploy the [DNS add-on](https://kubernetes.io/docs/concepts
 Get the CoreDNS yaml:
 
 ```bash
-wget https://storage.googleapis.com/kubernetes-the-hard-way/coredns.yaml
+wget https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml
 ```
 
 Edit the `coredns.yaml` file to change CoreDNS configuration to enable DNS resolution for external name:

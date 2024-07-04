@@ -28,10 +28,10 @@ Download the official Kubernetes release binaries:
 
 ```bash
 wget -q --show-progress --https-only --timestamping \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kube-apiserver" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kube-controller-manager" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kube-scheduler" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kubectl"
+  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kube-apiserver" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kube-controller-manager" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kube-scheduler" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kubectl"
 ```
 
 Install the Kubernetes binaries:
@@ -62,6 +62,8 @@ INTERNAL_IP=MY_NODE_INTERNAL_IP
 Create the `kube-apiserver.service` systemd unit file:
 
 ```bash
+KUBERNETES_PUBLIC_ADDRESS=MY_PUBLIC_IP_ADDRESS
+
 cat <<EOF | sudo tee /etc/systemd/system/kube-apiserver.service
 [Unit]
 Description=Kubernetes API Server
@@ -89,9 +91,10 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \\
   --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \\
   --kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \\
-  --kubelet-https=true \\
   --runtime-config=api/all=true \\
   --service-account-key-file=/var/lib/kubernetes/service-account.pem \\
+  --service-account-signing-key-file=/var/lib/kubernetes/service-account-key.pem \\
+  --service-account-issuer=https://${KUBERNETES_PUBLIC_ADDRESS}:6443 \\
   --service-cluster-ip-range=10.32.0.0/24 \\
   --service-node-port-range=30000-32767 \\
   --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \\
@@ -155,7 +158,7 @@ Create the `kube-scheduler.yaml` configuration file:
 
 ```bash
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: kubescheduler.config.k8s.io/v1alpha1
+apiVersion: kubescheduler.config.k8s.io/v1beta1
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
@@ -197,16 +200,11 @@ sudo systemctl start kube-apiserver kube-controller-manager kube-scheduler
 ### Verification
 
 ```bash
-kubectl get componentstatuses --kubeconfig admin.kubeconfig
+kubectl cluster-info --kubeconfig admin.kubeconfig
 ```
 
 ```bash
-NAME                 STATUS    MESSAGE              ERROR
-controller-manager   Healthy   ok
-scheduler            Healthy   ok
-etcd-2               Healthy   {"health": "true"}
-etcd-0               Healthy   {"health": "true"}
-etcd-1               Healthy   {"health": "true"}
+Kubernetes control plane is running at https://127.0.0.1:6443
 ```
 
 Test the HTTPS health check :
@@ -243,7 +241,7 @@ Create the `system:kube-apiserver-to-kubelet` [ClusterRole](https://kubernetes.i
 
 ```bash
 cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   annotations:
@@ -271,7 +269,7 @@ Bind the `system:kube-apiserver-to-kubelet` ClusterRole to the `kubernetes` user
 
 ```bash
 cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: system:kube-apiserver
@@ -350,12 +348,12 @@ curl --cacert ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}:6443/version
 ```bash
 {
   "major": "1",
-  "minor": "18",
-  "gitVersion": "v1.18.4",
+  "minor": "21",
+  "gitVersion": "v1.21.5",
   "gitCommit": "c96aede7b5205121079932896c4ad89bb93260af",
   "gitTreeState": "clean",
   "buildDate": "2020-06-17T11:33:59Z",
-  "goVersion": "go1.13.9",
+  "goVersion": "go1.16.5",
   "compiler": "gc",
   "platform": "linux/amd64"
 }
