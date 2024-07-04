@@ -47,13 +47,13 @@ sudo swapoff -a
 
 ```bash
 wget -q --show-progress --https-only --timestamping \
-  https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.21.0/crictl-v1.21.0-linux-amd64.tar.gz \
-  https://github.com/opencontainers/runc/releases/download/v1.0.0-rc93/runc.amd64 \
-  https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz \
-  https://github.com/containerd/containerd/releases/download/v1.4.4/containerd-1.4.4.linux-amd64.tar.gz \
-  https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kubectl \
-  https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kube-proxy \
-  https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kubelet
+  https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz \
+  https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.amd64 \
+  https://github.com/containernetworking/plugins/releases/download/v1.4.0/cni-plugins-linux-amd64-v1.4.0.tgz \
+  https://github.com/containerd/containerd/releases/download/v1.7.13/containerd-1.7.13-linux-amd64.tar.gz \
+  https://storage.googleapis.com/kubernetes-release/release/v1.29.1/bin/linux/amd64/kubectl \
+  https://storage.googleapis.com/kubernetes-release/release/v1.29.1/bin/linux/amd64/kube-proxy \
+  https://storage.googleapis.com/kubernetes-release/release/v1.29.1/bin/linux/amd64/kubelet
 ```
 
 Create the installation directories:
@@ -72,9 +72,9 @@ Install the worker binaries:
 
 ```bash
 mkdir containerd
-tar -xvf crictl-v1.21.5-linux-amd64.tar.gz
-tar -xvf containerd-1.4.4-linux-amd64.tar.gz -C containerd
-sudo tar -xvf cni-plugins-linux-amd64-v0.9.1.tgz -C /opt/cni/bin/
+tar -xvf crictl-v1.29.0-linux-amd64.tar.gz
+tar -xvf containerd-1.7.13-linux-amd64.tar.gz -C containerd
+sudo tar -xvf cni-plugins-linux-amd64-v1.4.0.tgz -C /opt/cni/bin/
 sudo mv runc.amd64 runc
 chmod +x crictl kubectl kube-proxy kubelet runc
 sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
@@ -96,7 +96,7 @@ Create the `bridge` network configuration file:
 ```bash
 cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
 {
-    "cniVersion": "0.4.0",
+    "cniVersion": "1.0.0",
     "name": "bridge",
     "type": "bridge",
     "bridge": "cnio0",
@@ -118,7 +118,7 @@ Create the `loopback` network configuration file:
 ```bash
 cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
 {
-    "cniVersion": "0.4.0",
+    "cniVersion": "1.0.0",
     "name": "lo",
     "type": "loopback"
 }
@@ -132,17 +132,10 @@ Create the `containerd` configuration file:
 ```bash
 sudo mkdir -p /etc/containerd/
 ```
+Set up containerd configuration to enable systemd Cgroups
 
 ```bash
-cat << EOF | sudo tee /etc/containerd/config.toml
-[plugins]
-  [plugins.cri.containerd]
-    snapshotter = "overlayfs"
-    [plugins.cri.containerd.default_runtime]
-      runtime_type = "io.containerd.runtime.v1.linux"
-      runtime_engine = "/usr/local/bin/runc"
-      runtime_root = ""
-EOF
+ containerd config default | sed 's/SystemdCgroup = false/SystemdCgroup = true/' | sudo tee /etc/containerd/config.toml
 ```
 
 Create the `containerd.service` systemd unit file:
@@ -194,6 +187,7 @@ authentication:
     clientCAFile: "/var/lib/kubernetes/ca.pem"
 authorization:
   mode: Webhook
+cgroupDriver: systemd
 clusterDomain: "cluster.local"
 clusterDNS:
   - "10.32.0.10"
@@ -220,12 +214,7 @@ Requires=containerd.service
 [Service]
 ExecStart=/usr/local/bin/kubelet \\
   --config=/var/lib/kubelet/kubelet-config.yaml \\
-  --container-runtime=remote \\
-  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
-  --image-pull-progress-deadline=2m \\
   --kubeconfig=/var/lib/kubelet/kubeconfig \\
-  --network-plugin=cni \\
-  --register-node=true \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -295,9 +284,21 @@ ssh root@controller-0 kubectl get nodes --kubeconfig admin.kubeconfig
 
 ```bash
 NAME       STATUS   ROLES    AGE   VERSION
-worker-0   Ready    <none>   15s   v1.21.5
-worker-1   Ready    <none>   15s   v1.21.5
-worker-2   Ready    <none>   15s   v1.21.5
+worker-0   Ready    <none>   15s   v1.29.1
+worker-1   Ready    <none>   15s   v1.29.1
+worker-2   Ready    <none>   15s   v1.29.1
 ```
+
+> [!NOTE]
+> By default kube-proxy uses iptables to set up Service IP handling and load balancing. Unfortunately, it breaks our deployment and there's a hack to force Linux to run iptables even for bridge-only traffic:
+> 
+> Run this on all control and worker nodes. 
+
+```bash
+sudo modprobe br_netfilter
+echo "br-netfilter" >> /etc/modules-load.d/modules.conf
+sysctl -w net.bridge.bridge-nf-call-iptables=1
+```
+
 
 Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)

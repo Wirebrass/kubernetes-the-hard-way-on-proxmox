@@ -201,7 +201,7 @@ The basic VM configuration process is the same for the 6 VM (you can also config
 
 You have to:
 
-* Install the [Ubuntu 18.04.4 LTS (Bionic Beaver) Server install image](https://releases.ubuntu.com/18.04/) on this VM.
+* Install the [Ubuntu 22.04.3 LTS Server install image](https://releases.ubuntu.com/22.04/) on this VM.
 
 * Configure the network interface (see the network architecture). Example of `/etc/netplan/00-installer-config.yaml` file if ens18 is the name of your private network interface (you need to change the IP address depending on the installed server):
 

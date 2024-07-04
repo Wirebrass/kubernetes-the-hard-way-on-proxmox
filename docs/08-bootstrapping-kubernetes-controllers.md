@@ -28,10 +28,10 @@ Download the official Kubernetes release binaries:
 
 ```bash
 wget -q --show-progress --https-only --timestamping \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kube-apiserver" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kube-controller-manager" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kube-scheduler" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.21.5/bin/linux/amd64/kubectl"
+  "https://storage.googleapis.com/kubernetes-release/release/v1.29.1/bin/linux/amd64/kube-apiserver" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.29.1/bin/linux/amd64/kube-controller-manager" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.29.1/bin/linux/amd64/kube-scheduler" \
+  "https://storage.googleapis.com/kubernetes-release/release/v1.29.1/bin/linux/amd64/kubectl"
 ```
 
 Install the Kubernetes binaries:
@@ -126,7 +126,7 @@ Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
 ExecStart=/usr/local/bin/kube-controller-manager \\
-  --address=0.0.0.0 \\
+  --bind-address=0.0.0.0 \\
   --cluster-cidr=10.200.0.0/16 \\
   --cluster-name=kubernetes \\
   --cluster-signing-cert-file=/var/lib/kubernetes/ca.pem \\
@@ -158,7 +158,7 @@ Create the `kube-scheduler.yaml` configuration file:
 
 ```bash
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: kubescheduler.config.k8s.io/v1beta1
+apiVersion: kubescheduler.config.k8s.io/v1
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
@@ -291,11 +291,11 @@ In this section you will provision an Nginx load balancer to front the Kubernete
 
 ### Provision an Nginx Load Balancer
 
-Install the Nginx Load Balancer:
+Install the Nginx Load Balancer and stream library:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y nginx
+sudo apt-get install -y nginx libnginx-mod-stream 
 ```
 
 As **root** user, Create the Nginx load balancer network configuration:
@@ -348,12 +348,12 @@ curl --cacert ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}:6443/version
 ```bash
 {
   "major": "1",
-  "minor": "21",
-  "gitVersion": "v1.21.5",
-  "gitCommit": "c96aede7b5205121079932896c4ad89bb93260af",
+  "minor": "29",
+  "gitVersion": "v1.29.1",
+  "gitCommit": "bc401b91f2782410b3fb3f9acf43a995c4de90d2",
   "gitTreeState": "clean",
-  "buildDate": "2020-06-17T11:33:59Z",
-  "goVersion": "go1.16.5",
+  "buildDate": "2024-01-17T15:41:12Z",
+  "goVersion": "go1.21.6",
   "compiler": "gc",
   "platform": "linux/amd64"
 }
