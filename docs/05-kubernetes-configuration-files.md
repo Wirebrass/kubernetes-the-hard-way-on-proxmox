@@ -10,10 +10,10 @@ In this section you will generate kubeconfig files for the `controller manager`,
 
 Each kubeconfig requires a Kubernetes API Server to connect to. To support high availability the IP address assigned to the external load balancer fronting the Kubernetes API Servers will be used.
 
-Define the static public IP address (you need to replace YOUR_EXTERNAL_IP by your external IP address):
+Define the static public IP address (you need to replace PUBLIC_IP_ADDRESS by your external IP address / ens18 IP address on the diagram)):
 
 ```bash
-KUBERNETES_PUBLIC_ADDRESS=YOUR_EXTERNAL_IP
+KUBERNETES_PUBLIC_ADDRESS=PUBLIC_IP_ADDRESS
 ```
 
 ### The kubelet Kubernetes Configuration File

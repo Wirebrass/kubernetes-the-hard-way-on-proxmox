@@ -8,10 +8,10 @@ In this lab you will generate a kubeconfig file for the `kubectl` command line u
 
 Each kubeconfig requires a Kubernetes API Server to connect to. To support high availability the IP address assigned to the external load balancer fronting the Kubernetes API Servers will be used.
 
-Generate a kubeconfig file suitable for authenticating as the `admin` user (replace MY_PUBLIC_IP_ADDRESS with your public IP address on the `gateway-01` VM):
+Generate a kubeconfig file suitable for authenticating as the `admin` user (replace PUBLIC_IP_ADDRESS with your public IP address on the `gateway-01` VM):
 
 ```bash
-KUBERNETES_PUBLIC_ADDRESS=MY_PUBLIC_IP_ADDRESS
+KUBERNETES_PUBLIC_ADDRESS=PUBLIC_IP_ADDRESS
 
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=ca.pem \

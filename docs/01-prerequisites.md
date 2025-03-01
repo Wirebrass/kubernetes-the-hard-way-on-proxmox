@@ -67,6 +67,9 @@ You have to:
 
 * Configure the network interfaces (see the network architecture). Example of `/etc/network/interfaces` file if your public interface is ens18 and your private interface is ens19 (you need to replace `PUBLIC_IP_ADDRESS`, `MASK` and `PUBLIC_IP_GATEWAY` with your values):
 
+If your Proxmox instance is directly connected to internet, then PUBLIC_IP_GATEWAY is the default gateway (or next hop) to join more internet IP addresses.
+Else if your Proxmox instance is connected a LAN (the ens18 on the diagram connected to your LAN), then PUBLIC_IP_GATEWAY is your default gateway to join internet (your ISP router).
+
 ```bash
 source /etc/network/interfaces.d/*
 
@@ -89,6 +92,9 @@ iface ens19 inet static
         address 192.168.8.1/24
         dns-nameservers 9.9.9.9
 ```
+
+If your Proxmox instance is directly connected to internet, then PUBLIC_IP_GATEWAY is the default gateway (or next hop) to join more internet IP addresses.
+Else if your Proxmox instance is connected a LAN (the ens18 on the diagram connected to your LAN), then PUBLIC_IP_GATEWAY is your default gateway to join internet (example: your ISP router).
 
 > If you want, you can define the IPv6 stack configuration.
 >
@@ -163,11 +169,11 @@ COMMIT
 sudo iptables-restore < /etc/iptables/rules.v4
 ```
 
-* Configure the `/etc/hosts` file (you need to replace `PUBLIC_GW_IP`):
+* Configure the `/etc/hosts` file (you need to replace `PUBLIC_IP_GATEWAY`):
 
 ```bash
 127.0.0.1       localhost
-PUBLIC_GW_IP    gateway-01.external gateway-01
+PUBLIC_IP_GATEWAY    gateway-01.external gateway-01
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
@@ -250,7 +256,7 @@ sudo systemctl enable ssh
 sudo systemctl start ssh
 ```
 
-* Configure `/etc/hosts` file. Example for controller-0 (need to replace `PUBLIC_GW_IP` and adapt this sample config for each VM):
+* Configure `/etc/hosts` file. Example for controller-0 (need to replace `PUBLIC_IP_GATEWAY` and adapt this sample config for each VM):
 
 ```bash
 127.0.0.1 localhost
@@ -263,7 +269,7 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 
-PUBLIC_GW_IP    gateway-01.external
+PUBLIC_IP_GATEWAY    gateway-01.external
 192.168.8.1     gateway-01
 
 192.168.8.11    controller-1

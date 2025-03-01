@@ -62,7 +62,7 @@ INTERNAL_IP=MY_NODE_INTERNAL_IP
 Create the `kube-apiserver.service` systemd unit file:
 
 ```bash
-KUBERNETES_PUBLIC_ADDRESS=MY_PUBLIC_IP_ADDRESS
+KUBERNETES_PUBLIC_ADDRESS=PUBLIC_IP_ADDRESS
 
 cat <<EOF | sudo tee /etc/systemd/system/kube-apiserver.service
 [Unit]

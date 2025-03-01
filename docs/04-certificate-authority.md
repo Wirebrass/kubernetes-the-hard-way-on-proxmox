@@ -101,10 +101,10 @@ admin.pem
 
 Kubernetes uses a [special-purpose authorization mode](https://kubernetes.io/docs/admin/authorization/node/) called Node Authorizer, that specifically authorizes API requests made by [Kubelets](https://kubernetes.io/docs/concepts/overview/components/#kubelet). In order to be authorized by the Node Authorizer, Kubelets must use a credential that identifies them as being in the `system:nodes` group, with a username of `system:node:<nodeName>`. In this section you will create a certificate for each Kubernetes worker node that meets the Node Authorizer requirements.
 
-On the `gateway-01` VM, generate a certificate and private key for each Kubernetes worker node (you need to replace YOUR_EXTERNAL_IP by your external IP address):
+On the `gateway-01` VM, generate a certificate and private key for each Kubernetes worker node (you need to replace PUBLIC_IP_ADDRESS by your external IP address / ens18 IP address on the diagram)):
 
 ```bash
-EXTERNAL_IP=YOUR_EXTERNAL_IP
+EXTERNAL_IP=PUBLIC_IP_ADDRESS
 
 for id_instance in 0 1 2; do
 cat > worker-${id_instance}-csr.json <<EOF
@@ -270,10 +270,10 @@ kube-scheduler.pem
 
 The `kubernetes-the-hard-way` static IP address will be included in the list of subject alternative names for the Kubernetes API Server certificate. This will ensure the certificate can be validated by remote clients.
 
-On the `gateway-01` VM, generate the Kubernetes API Server certificate and private key (you need to replace YOUR_EXTERNAL_IP by your external IP address):
+On the `gateway-01` VM, generate the Kubernetes API Server certificate and private key (you need to replace PUBLIC_IP_ADDRESS by your external IP address / ens18 IP address on the diagram):
 
 ```bash
-KUBERNETES_PUBLIC_ADDRESS=YOUR_EXTERNAL_IP
+KUBERNETES_PUBLIC_ADDRESS=PUBLIC_IP_ADDRESS
 
 KUBERNETES_HOSTNAMES=kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster,kubernetes.svc.cluster.local
 
